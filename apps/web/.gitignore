@@ -17,6 +17,9 @@
 /.next/
 /out/
 
+# Turborepo (cache se existir ao correr só esta app)
+.turbo
+
 # production
 /build
 
@@ -39,3 +42,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# caches locais
+.eslintcache
+.cache

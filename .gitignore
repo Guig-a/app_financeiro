@@ -4,6 +4,33 @@
 **/dist
 **/.next
 **/node_modules
+**/out
+
+# Turborepo — cache local (não versionar; evita ficheiros >50MB no GitHub)
+.turbo
+**/.turbo
+
+# Caches de ferramentas (ESLint, bundlers, etc.)
+.eslintcache
+**/.eslintcache
+**/.cache
+.swc
+**/.swc
+
+# TypeScript incremental (além do que cada app já ignora)
+*.tsbuildinfo
+
+# Storybook (se passarem a usar)
+storybook-static
+**/storybook-static
+
+# SQLite de testes E2E (`pnpm test:e2e` na raiz)
+/test-e2e.db
+/test-e2e.db-journal
+
+# SQLite genérico local (além de **/prisma/*.db)
+*.sqlite
+*.sqlite3
 
 # Prisma generated client (rode `npx prisma generate` após clone)
 **/prisma/generated
@@ -19,6 +46,9 @@ lerna-debug.log*
 
 # OS
 .DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
 
 # Tests
 /coverage
