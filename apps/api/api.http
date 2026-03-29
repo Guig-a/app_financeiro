@@ -1,0 +1,370 @@
+### Variáveis Globais
+@baseUrl = http://localhost:3000
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIyNDMwZDlkZC1hZmUyLTRmMGMtYjBhMC1lMGZlY2UxYmU1NzYiLCJlbWFpbCI6InRlc3RlQGVtYWlsLmNvbSIsImlhdCI6MTc2NTU2MzA3NiwiZXhwIjoxNzY1NTYzOTc2fQ.SLEjLX-ESMC-LMpParCMCqffGZVeg9FQQhhv-uUfJCE
+
+###############################################
+# AUTH - Autenticação
+###############################################
+
+### Registrar novo usuário
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "name": "João Silva",
+  "email": "joao@email.com",
+  "password": "123456"
+}
+
+### Login
+# @name login
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "joao@email.com",
+  "password": "123456"
+}
+
+### Refresh Token
+POST {{baseUrl}}/auth/refresh
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+###############################################
+# USERS - Usuários
+###############################################
+
+### Criar usuário (desenvolvimento)
+POST {{baseUrl}}/users
+Content-Type: application/json
+
+{
+  "name": "Maria Santos",
+  "email": "maria@email.com",
+  "password": "123456"
+}
+
+### Meu perfil (protegido)
+GET {{baseUrl}}/users/me
+Authorization: Bearer {{token}}
+
+### Listar todos os usuários (protegido)
+GET {{baseUrl}}/users
+Authorization: Bearer {{token}}
+
+###############################################
+# PESSOAS - Clientes/Fornecedores
+###############################################
+
+### Criar pessoa
+POST {{baseUrl}}/pessoas
+Content-Type: application/json
+
+{
+  "nome": "Empresa ABC Ltda",
+  "tipo": "FORNECEDOR",
+  "documento": "12.345.678/0001-90"
+}
+
+### Criar cliente
+POST {{baseUrl}}/pessoas
+Content-Type: application/json
+
+{
+  "nome": "João da Silva",
+  "tipo": "CLIENTE",
+  "documento": "123.456.789-00"
+}
+
+### Criar pessoa que é ambos
+POST {{baseUrl}}/pessoas
+Content-Type: application/json
+
+{
+  "nome": "Empresa XYZ",
+  "tipo": "AMBOS",
+  "documento": "98.765.432/0001-10"
+}
+
+### Listar todas as pessoas
+GET {{baseUrl}}/pessoas
+
+### Listar apenas clientes
+GET {{baseUrl}}/pessoas?tipo=CLIENTE
+
+### Listar apenas fornecedores
+GET {{baseUrl}}/pessoas?tipo=FORNECEDOR
+
+### Buscar pessoa por ID
+GET {{baseUrl}}/pessoas/SUBSTITUA_PELO_ID
+
+### Atualizar pessoa
+PATCH {{baseUrl}}/pessoas/SUBSTITUA_PELO_ID
+Content-Type: application/json
+
+{
+  "nome": "Empresa ABC Atualizada",
+  "tipo": "CLIENTE"
+}
+
+### Deletar pessoa
+DELETE {{baseUrl}}/pessoas/SUBSTITUA_PELO_ID
+
+###############################################
+# PRODUTOS
+###############################################
+
+### Criar produto
+POST {{baseUrl}}/produtos
+Content-Type: application/json
+
+{
+  "nome": "Notebook Dell Inspiron",
+  "codigo": "NB001",
+  "unidade": "UN",
+  "preco": 3500.00
+}
+
+### Criar produto sem código
+POST {{baseUrl}}/produtos
+Content-Type: application/json
+
+{
+  "nome": "Mouse Logitech",
+  "unidade": "UN",
+  "preco": 89.90
+}
+
+### Criar produto em caixa
+POST {{baseUrl}}/produtos
+Content-Type: application/json
+
+{
+  "nome": "Papel A4",
+  "codigo": "PAP001",
+  "unidade": "CX",
+  "preco": 45.50
+}
+
+### Listar todos os produtos
+GET {{baseUrl}}/produtos
+
+### Buscar produto por ID
+GET {{baseUrl}}/produtos/SUBSTITUA_PELO_ID
+
+### Atualizar produto
+PATCH {{baseUrl}}/produtos/SUBSTITUA_PELO_ID
+Content-Type: application/json
+
+{
+  "preco": 3200.00,
+  "nome": "Notebook Dell Inspiron - Atualizado"
+}
+
+### Atualizar apenas o preço
+PATCH {{baseUrl}}/produtos/SUBSTITUA_PELO_ID
+Content-Type: application/json
+
+{
+  "preco": 3100.00
+}
+
+### Deletar produto
+DELETE {{baseUrl}}/produtos/SUBSTITUA_PELO_ID
+
+### Importar produtos via CSV
+POST {{baseUrl}}/produtos/import/csv
+Content-Type: application/json
+
+{
+  "path": "./uploads/produtos.csv"
+}
+
+###############################################
+# FLUXO COMPLETO DE TESTE
+###############################################
+
+### 1. Registrar usuário
+# @name register
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "name": "Teste User",
+  "email": "teste@email.com",
+  "password": "123456"
+}
+
+### 2. Fazer login (copie o accessToken)
+# @name login
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "teste@email.com",
+  "password": "123456"
+}
+
+### 3. Ver meu perfil (use o token do login)
+GET {{baseUrl}}/users/me
+Authorization: Bearer {{token}}
+
+### 4. Criar uma pessoa
+# @name createPessoa
+POST {{baseUrl}}/pessoas
+Content-Type: application/json
+
+{
+  "nome": "Cliente Teste",
+  "tipo": "CLIENTE",
+  "documento": "111.222.333-44"
+}
+
+### 5. Criar um produto
+# @name createProduto
+POST {{baseUrl}}/produtos
+Content-Type: application/json
+
+{
+  "nome": "Produto Teste",
+  "codigo": "TEST001",
+  "unidade": "UN",
+  "preco": 100.00
+}
+
+### 6. Listar tudo
+GET {{baseUrl}}/pessoas
+###
+GET {{baseUrl}}/produtos
+
+###############################################
+# LANÇAMENTOS FINANCEIROS
+###############################################
+
+### Criar receita
+POST {{baseUrl}}/lancamentos
+Content-Type: application/json
+
+{
+  "descricao": "Venda de produto",
+  "pessoaId": "SUBSTITUA_PELO_ID_DA_PESSOA",
+  "produtoId": "SUBSTITUA_PELO_ID_DO_PRODUTO",
+  "valor": 3500.00,
+  "dataCompetencia": "2025-12-01",
+  "dataVencimento": "2025-12-15",
+  "tipo": "RECEITA"
+}
+
+### Criar despesa
+POST {{baseUrl}}/lancamentos
+Content-Type: application/json
+
+{
+  "descricao": "Compra de material",
+  "pessoaId": "SUBSTITUA_PELO_ID_DA_PESSOA",
+  "valor": 500.00,
+  "dataCompetencia": "2025-12-01",
+  "dataVencimento": "2025-12-10",
+  "tipo": "DESPESA"
+}
+
+### Criar receita já quitada
+POST {{baseUrl}}/lancamentos
+Content-Type: application/json
+
+{
+  "descricao": "Venda paga",
+  "pessoaId": "SUBSTITUA_PELO_ID_DA_PESSOA",
+  "valor": 2000.00,
+  "dataCompetencia": "2025-11-01",
+  "dataVencimento": "2025-11-15",
+  "dataQuitacao": "2025-11-10",
+  "tipo": "RECEITA"
+}
+
+### Listar todos os lançamentos
+GET {{baseUrl}}/lancamentos
+
+### Filtrar por pessoa
+GET {{baseUrl}}/lancamentos?pessoaId=SUBSTITUA_PELO_ID
+
+### Filtrar por tipo (receitas)
+GET {{baseUrl}}/lancamentos?tipo=RECEITA
+
+### Filtrar por tipo (despesas)
+GET {{baseUrl}}/lancamentos?tipo=DESPESA
+
+### Filtrar por período
+GET {{baseUrl}}/lancamentos?inicio=2025-12-01&fim=2025-12-31
+
+### Filtrar por pessoa e tipo
+GET {{baseUrl}}/lancamentos?pessoaId=SUBSTITUA_PELO_ID&tipo=RECEITA
+
+### Buscar lançamento por ID
+GET {{baseUrl}}/lancamentos/SUBSTITUA_PELO_ID
+
+### Quitar lançamento (marcar como pago)
+PATCH {{baseUrl}}/lancamentos/SUBSTITUA_PELO_ID
+Content-Type: application/json
+
+{
+  "dataQuitacao": "2025-12-12"
+}
+
+### Atualizar lançamento
+PATCH {{baseUrl}}/lancamentos/SUBSTITUA_PELO_ID
+Content-Type: application/json
+
+{
+  "valor": 4000.00,
+  "descricao": "Valor atualizado"
+}
+
+### Deletar lançamento
+DELETE {{baseUrl}}/lancamentos/SUBSTITUA_PELO_ID
+
+###############################################
+# FLUXO COMPLETO DE TESTE COM LANÇAMENTOS
+###############################################
+
+### 1. Criar pessoa (cliente)
+# @name createCliente
+POST {{baseUrl}}/pessoas
+Content-Type: application/json
+
+{
+  "nome": "Cliente Teste",
+  "tipo": "CLIENTE",
+  "documento": "123.456.789-00"
+}
+
+### 2. Criar produto
+# @name createProduto
+POST {{baseUrl}}/produtos
+Content-Type: application/json
+
+{
+  "nome": "Produto Teste",
+  "codigo": "PROD001",
+  "unidade": "UN",
+  "preco": 1000.00
+}
+
+### 3. Criar receita vinculada
+POST {{baseUrl}}/lancamentos
+Content-Type: application/json
+
+{
+  "descricao": "Venda do Produto Teste",
+  "pessoaId": "a77f0d00-b07a-4386-8be5-8d2709ac272c",
+  "produtoId": "ID_DO_PRODUTO_CRIADO",
+  "valor": 1000.00,
+  "dataCompetencia": "2025-12-12",
+  "dataVencimento": "2025-12-20",
+  "tipo": "RECEITA"
+}
+
+### 4. Ver lançamentos com status calculado
+GET {{baseUrl}}/lancamentos
+

@@ -1,0 +1,98 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "./generated/client"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String         @id @default(uuid())
+  tenantId      String
+  tenant        Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  email         String         @unique
+  passwordHash  String
+  role          String         @default("USER")
+  createdAt     DateTime       @default(now())
+  refreshTokens RefreshToken[]
+
+  @@index([tenantId])
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenId   String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([tokenId])
+}
+
+model Tenant {
+  id        String   @id @default(uuid())
+  slug      String   @unique
+  name      String
+  cpf       String?
+  cnpj      String?
+  createdAt DateTime @default(now())
+  users     User[]
+  pessoas   Pessoa[]
+  produtos  Produto[]
+  lancamentos Lancamento[]
+}
+
+model Pessoa {
+  id        String   @id @default(uuid())
+  tenantId  String
+  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  nome      String
+  tipo      String
+  documento String?
+  createdAt DateTime @default(now())
+  lancamentos Lancamento[]
+
+  @@index([tenantId])
+}
+
+model Produto {
+  id        String   @id @default(uuid())
+  tenantId  String
+  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  nome      String
+  codigo    String?
+  unidade   String?
+  preco     Float?
+  createdAt DateTime @default(now())
+  lancamentos Lancamento[]
+
+  @@index([tenantId])
+  @@unique([tenantId, codigo])
+}
+
+model Lancamento {
+  id             String    @id @default(uuid())
+  tenantId       String
+  tenant         Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  descricao      String?
+  pessoaId       String?
+  pessoa         Pessoa?   @relation(fields: [pessoaId], references: [id])
+  produtoId      String?
+  produto        Produto?  @relation(fields: [produtoId], references: [id])
+  valor          Float
+  dataCompetencia DateTime
+  dataVencimento DateTime
+  dataQuitacao   DateTime?
+  tipo           String     // RECEITA | DESPESA
+  createdAt      DateTime @default(now())
+
+  @@index([tenantId])
+}
+

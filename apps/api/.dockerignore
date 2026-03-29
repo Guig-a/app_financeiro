@@ -1,0 +1,8 @@
+node_modules
+dist
+.git
+.turbo
+coverage
+*.log
+prisma/*.db
+prisma/*.db-journal

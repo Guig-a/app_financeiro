@@ -1,0 +1,22 @@
+{
+  "name": "financeiro-monorepo",
+  "private": true,
+  "version": "0.1.0",
+  "packageManager": "pnpm@10.9.0",
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev --parallel",
+    "dev:api": "turbo run start:dev --filter=@financeiro/api",
+    "dev:web": "turbo run dev --filter=@financeiro/web",
+    "lint": "turbo run lint",
+    "test": "turbo run test",
+    "test:e2e": "cross-env DATABASE_URL=file:./test-e2e.db turbo run test:e2e --filter=@financeiro/api",
+    "format": "turbo run format",
+    "docker:up": "docker compose up --build",
+    "docker:down": "docker compose down"
+  },
+  "devDependencies": {
+    "cross-env": "^10.0.0",
+    "turbo": "^2.5.8"
+  }
+}

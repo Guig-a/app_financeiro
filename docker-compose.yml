@@ -1,0 +1,33 @@
+services:
+  api:
+    container_name: financeiro-api
+    build:
+      context: ./apps/api
+      dockerfile: Dockerfile
+    working_dir: /app
+    ports:
+      - "3000:3000"
+    env_file:
+      - ./apps/api/.env
+    volumes:
+      - ./apps/api:/app
+      - api_node_modules:/app/node_modules
+    command: pnpm start:dev
+  web:
+    container_name: financeiro-web
+    build:
+      context: ./apps/web
+      dockerfile: Dockerfile
+    working_dir: /app
+    ports:
+      - "3001:3001"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:3000
+    volumes:
+      - ./apps/web:/app
+      - web_node_modules:/app/node_modules
+    command: pnpm dev --port 3001
+
+volumes:
+  api_node_modules:
+  web_node_modules:
