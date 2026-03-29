@@ -1,3 +1,4 @@
+import type { Role } from '@/shared/types/role';
 import type { DashboardChartPoint, DashboardViewModel } from '../types/dashboard.types';
 
 export type LancamentoRow = {
@@ -105,7 +106,7 @@ function currentPeriodLabel(): string {
 }
 
 export function buildDashboardViewModel(input: {
-  user: { email: string; tenantId: string; role: string };
+  user: { email: string; tenantId: string; role: Role };
   lancamentos: LancamentoRow[];
   produtos: unknown[];
   usuarios: unknown[];

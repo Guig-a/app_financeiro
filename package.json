@@ -5,15 +5,17 @@
   "packageManager": "pnpm@10.9.0",
   "scripts": {
     "build": "turbo run build",
+    "typecheck": "turbo run typecheck",
     "dev": "turbo run dev --parallel",
     "dev:api": "turbo run start:dev --filter=@financeiro/api",
     "dev:web": "turbo run dev --filter=@financeiro/web",
     "lint": "turbo run lint",
     "test": "turbo run test",
-    "test:e2e": "cross-env DATABASE_URL=file:./test-e2e.db turbo run test:e2e --filter=@financeiro/api",
+    "test:e2e": "cross-env DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:5433/financeiro_e2e?schema=public turbo run test:e2e --filter=@financeiro/api",
     "format": "turbo run format",
     "docker:up": "docker compose up --build",
-    "docker:down": "docker compose down"
+    "docker:down": "docker compose down",
+    "docker:postgres-e2e": "docker compose up postgres-e2e -d --wait"
   },
   "devDependencies": {
     "cross-env": "^10.0.0",

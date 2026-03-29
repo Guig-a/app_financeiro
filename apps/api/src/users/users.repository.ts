@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../database/prisma.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { Role } from '../common/types/role';
 import * as crypto from 'crypto';
 import * as argon2 from 'argon2';
 
@@ -25,7 +26,7 @@ export class UsersRepository {
         tenantId,
         email: data.email,
         passwordHash: hashed,
-        role: data.role ?? 'USER',
+        role: data.role ?? Role.USER,
       },
     });
   }
@@ -54,7 +55,7 @@ export class UsersRepository {
   async update(id: string, tenantId: string, data: UpdateUserDto) {
     const payload: {
       email?: string;
-      role?: 'MASTER' | 'USER';
+      role?: Role;
       passwordHash?: string;
     } = {};
 
@@ -79,7 +80,7 @@ export class UsersRepository {
   async delete(id: string, tenantId: string) {
     const user = await this.findById(id, tenantId);
     if (!user) return null;
-    await this.prisma.user.delete({ where: { id } });
+    await this.prisma.user.deleteMany({ where: { id, tenantId } });
     return user;
   }
 

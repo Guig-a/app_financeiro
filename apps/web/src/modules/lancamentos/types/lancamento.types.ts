@@ -1,3 +1,5 @@
+export type LancamentoStatus = 'PAGO' | 'EM_ABERTO' | 'EM_ATRASO';
+
 export type Lancamento = {
   id: string;
   descricao?: string;
@@ -10,6 +12,7 @@ export type Lancamento = {
   dataCompetencia: string;
   dataVencimento: string;
   dataQuitacao?: string;
+  status?: LancamentoStatus;
 };
 
 export type LancamentoPayload = {

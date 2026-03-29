@@ -29,7 +29,7 @@ export class LancamentosRepository {
   async delete(id: string, tenantId: string) {
     const lancamento = await this.findById(id, tenantId);
     if (!lancamento) return null;
-    await this.prisma.lancamento.delete({ where: { id } });
+    await this.prisma.lancamento.deleteMany({ where: { id, tenantId } });
     return lancamento;
   }
 

@@ -16,8 +16,15 @@ import {
   DataTable,
   useDataTableState,
 } from '@/shared/components/data-table';
+import { getApiErrorMessage } from '@/shared/lib/api';
 import { formatCurrencyThin } from '@/shared/lib/format';
-import { Produto, ProdutoPayload } from '../types/produto.types';
+import {
+  Produto,
+  ProdutoFormState,
+  ProdutoPayload,
+  UNIDADES_PRODUTO,
+  type UnidadeProduto,
+} from '../types/produto.types';
 import {
   createProduto,
   deleteProduto,
@@ -56,6 +63,18 @@ function buildColumns(): ColumnDef<Produto>[] {
       },
     },
     {
+      accessorKey: 'unidade',
+      header: 'Unid.',
+      cell: ({ row }) => {
+        const u = row.original.unidade;
+        return u ? (
+          <span className="font-numeric text-[11px] uppercase">{u}</span>
+        ) : (
+          <EmptyCell />
+        );
+      },
+    },
+    {
       accessorKey: 'preco',
       header: () => <span className="block w-full text-right">Preço</span>,
       cell: ({ row }) =>
@@ -86,13 +105,13 @@ export function ProdutosView() {
     openCreateModal,
     closeCreateModal,
   } = useDataTableState<Produto>();
-  const [createForm, setCreateForm] = useState<ProdutoPayload>({
+  const [createForm, setCreateForm] = useState<ProdutoFormState>({
     nome: '',
     codigo: '',
     unidade: '',
     preco: undefined,
   });
-  const [editForm, setEditForm] = useState<ProdutoPayload>({
+  const [editForm, setEditForm] = useState<ProdutoFormState>({
     nome: '',
     codigo: '',
     unidade: '',
@@ -106,12 +125,17 @@ export function ProdutosView() {
     mutationFn: createProduto,
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ['produtos'] });
-      setCreateForm({ nome: '', codigo: '', unidade: '', preco: undefined });
+      setCreateForm({
+        nome: '',
+        codigo: '',
+        unidade: '',
+        preco: undefined,
+      });
       closeCreateModal();
       toast.success('Produto criado', 'Registro incluído com sucesso.');
     },
-    onError: () => {
-      toast.error('Falha ao criar produto', 'Verifique os campos e tente novamente.');
+    onError: (err) => {
+      toast.error('Falha ao criar produto', getApiErrorMessage(err));
     },
   });
 
@@ -123,11 +147,8 @@ export function ProdutosView() {
       setEditingRow(null);
       toast.success('Produto atualizado', 'Alterações salvas com sucesso.');
     },
-    onError: () => {
-      toast.error(
-        'Falha ao atualizar produto',
-        'Não foi possível salvar as alterações.',
-      );
+    onError: (err) => {
+      toast.error('Falha ao atualizar produto', getApiErrorMessage(err));
     },
   });
 
@@ -137,8 +158,8 @@ export function ProdutosView() {
       await queryClient.invalidateQueries({ queryKey: ['produtos'] });
       toast.success('Produto removido', 'O registro foi excluído.');
     },
-    onError: () => {
-      toast.error('Falha ao excluir produto', 'Tente novamente em instantes.');
+    onError: (err) => {
+      toast.error('Não foi possível excluir', getApiErrorMessage(err));
     },
   });
 
@@ -168,12 +189,18 @@ export function ProdutosView() {
     return 'Não foi possível concluir a ação.';
   }
 
+  function narrowUnidade(u: string): UnidadeProduto | undefined {
+    return UNIDADES_PRODUTO.includes(u as UnidadeProduto)
+      ? (u as UnidadeProduto)
+      : undefined;
+  }
+
   function onSubmitCreate(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     createMutation.mutate({
       ...createForm,
       codigo: createForm.codigo || undefined,
-      unidade: createForm.unidade || undefined,
+      unidade: narrowUnidade(createForm.unidade),
     });
   }
 
@@ -185,7 +212,7 @@ export function ProdutosView() {
       payload: {
         ...editForm,
         codigo: editForm.codigo || undefined,
-        unidade: editForm.unidade || undefined,
+        unidade: narrowUnidade(editForm.unidade),
       },
     });
   }
@@ -235,7 +262,12 @@ export function ProdutosView() {
               nome: row.nome,
               codigo: row.codigo ?? '',
               unidade: row.unidade ?? '',
-              preco: row.preco,
+              preco:
+                row.preco != null && typeof row.preco === 'number'
+                  ? row.preco
+                  : row.preco != null
+                    ? Number(row.preco)
+                    : undefined,
             });
           }}
           onDelete={(row) => setDeleteTarget(row)}

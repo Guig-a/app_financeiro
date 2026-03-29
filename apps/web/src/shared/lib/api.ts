@@ -3,6 +3,7 @@ import axios, {
   AxiosHeaders,
   AxiosRequestConfig,
   InternalAxiosRequestConfig,
+  isAxiosError,
 } from 'axios';
 import { routes } from '@/config/routes';
 import { setFlashToast } from '@/shared/lib/toast';
@@ -99,4 +100,19 @@ export async function apiFetch<T>(
     ...rest,
   });
   return response.data;
+}
+
+/** Extrai mensagem do corpo NestJS (`message`) ou do Axios. */
+export function getApiErrorMessage(error: unknown): string {
+  if (isAxiosError(error)) {
+    const data = error.response?.data as
+      | { message?: string | string[] }
+      | undefined;
+    const msg = data?.message;
+    if (Array.isArray(msg)) return msg.join(' ');
+    if (typeof msg === 'string' && msg.trim()) return msg;
+    return error.message || 'Erro na requisição.';
+  }
+  if (error instanceof Error) return error.message;
+  return 'Ocorreu um erro inesperado.';
 }

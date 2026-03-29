@@ -29,6 +29,12 @@ export class PessoasRepository {
     return this.prisma.pessoa.findFirst({ where: { id, tenantId } });
   }
 
+  countLancamentosVinculados(pessoaId: string, tenantId: string) {
+    return this.prisma.lancamento.count({
+      where: { tenantId, pessoaId },
+    });
+  }
+
   async update(id: string, tenantId: string, data: UpdatePessoaDto) {
     const { count } = await this.prisma.pessoa.updateMany({
       where: { id, tenantId },
@@ -41,7 +47,7 @@ export class PessoasRepository {
   async delete(id: string, tenantId: string) {
     const pessoa = await this.findById(id, tenantId);
     if (!pessoa) return null;
-    await this.prisma.pessoa.delete({ where: { id } });
+    await this.prisma.pessoa.deleteMany({ where: { id, tenantId } });
     return pessoa;
   }
 }

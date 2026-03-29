@@ -5,6 +5,7 @@ import {
   IsString,
   MinLength,
 } from 'class-validator';
+import { Role } from '../../common/types/role';
 
 export class CreateUserDto {
   @IsEmail()
@@ -15,6 +16,6 @@ export class CreateUserDto {
   password: string;
 
   @IsOptional()
-  @IsIn(['MASTER', 'USER'])
-  role?: 'MASTER' | 'USER';
+  @IsIn([Role.MASTER, Role.USER])
+  role?: Role;
 }

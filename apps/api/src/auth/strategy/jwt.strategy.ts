@@ -1,6 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
+import type { Role } from '../../common/types/role';
+import type { AuthenticatedUser } from '../../common/types/authenticated-user';
 
 const accessTokenFromCookie = (request: {
   cookies?: { access_token?: string };
@@ -23,12 +25,12 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
     email: string;
     tenantId: string;
     role: string;
-  }) {
+  }): Promise<AuthenticatedUser> {
     return {
       userId: payload.sub,
       email: payload.email,
       tenantId: payload.tenantId,
-      role: payload.role,
+      role: payload.role as Role,
     };
   }
 }

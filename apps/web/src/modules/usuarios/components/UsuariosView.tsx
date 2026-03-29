@@ -22,6 +22,7 @@ import {
   deleteUsuario,
   updateUsuario,
 } from '../services/usuario.service';
+import { getApiErrorMessage } from '@/shared/lib/api';
 import { useToast } from '@/shared/providers/toast-provider';
 
 const UsuariosModals = dynamic(() => import('./UsuariosModals'), { ssr: false });
@@ -96,8 +97,8 @@ export function UsuariosView() {
       closeCreateModal();
       toast.success('Usuário criado', 'Novo usuário incluído no tenant.');
     },
-    onError: () => {
-      toast.error('Falha ao criar usuário', 'Verifique permissões e dados.');
+    onError: (err) => {
+      toast.error('Falha ao criar usuário', getApiErrorMessage(err));
     },
   });
 
@@ -109,8 +110,8 @@ export function UsuariosView() {
       setEditingRow(null);
       toast.success('Usuário atualizado', 'Alterações salvas com sucesso.');
     },
-    onError: () => {
-      toast.error('Falha ao atualizar usuário', 'Não foi possível salvar.');
+    onError: (err) => {
+      toast.error('Falha ao atualizar usuário', getApiErrorMessage(err));
     },
   });
 
@@ -120,8 +121,8 @@ export function UsuariosView() {
       await queryClient.invalidateQueries({ queryKey: ['usuarios'] });
       toast.success('Usuário removido', 'Registro excluído do tenant.');
     },
-    onError: () => {
-      toast.error('Falha ao excluir usuário', 'Tente novamente em instantes.');
+    onError: (err) => {
+      toast.error('Falha ao excluir usuário', getApiErrorMessage(err));
     },
   });
 

@@ -8,6 +8,8 @@ import { CreateLancamentoDto } from './dto/create-lancamento.dto';
 import { UpdateLancamentoDto } from './dto/update-lancamento.dto';
 import { FilterLancamentoDto } from './dto/filter-lancamento.dto';
 import { calcularStatus } from './rules/status-calculator';
+import { decimalToNumber } from '../common/utils/prisma-json';
+import type { Lancamento as LancamentoRow } from '../../prisma/generated/client';
 
 @Injectable()
 export class LancamentosService {
@@ -18,6 +20,27 @@ export class LancamentosService {
     return value.includes('T') ? value : `${value}T00:00:00.000Z`;
   }
 
+  private mapLancamentoJson(
+    lanc: LancamentoRow & {
+      pessoa?: unknown;
+      produto?: {
+        preco: unknown;
+        [key: string]: unknown;
+      } | null;
+    },
+  ) {
+    return {
+      ...lanc,
+      valor: decimalToNumber(lanc.valor) ?? 0,
+      produto: lanc.produto
+        ? {
+            ...lanc.produto,
+            preco: decimalToNumber(lanc.produto.preco),
+          }
+        : null,
+    };
+  }
+
   async create(tenantId: string, data: CreateLancamentoDto) {
     await this.ensureReferencesInTenant(
       tenantId,
@@ -26,12 +49,13 @@ export class LancamentosService {
     );
     const lanc = await this.repo.create(tenantId, {
       ...data,
-      dataCompetencia: this.normalizeDateTime(data.dataCompetencia),
-      dataVencimento: this.normalizeDateTime(data.dataVencimento),
+      dataCompetencia: this.normalizeDateTime(data.dataCompetencia)!,
+      dataVencimento: this.normalizeDateTime(data.dataVencimento)!,
       dataQuitacao: this.normalizeDateTime(data.dataQuitacao),
     });
+    const json = this.mapLancamentoJson(lanc);
     return {
-      ...lanc,
+      ...json,
       status: calcularStatus(lanc.dataVencimento, lanc.dataQuitacao),
     };
   }
@@ -40,7 +64,7 @@ export class LancamentosService {
     const list = await this.repo.findAll(tenantId, filters);
 
     return list.map((lanc) => ({
-      ...lanc,
+      ...this.mapLancamentoJson(lanc),
       status: calcularStatus(lanc.dataVencimento, lanc.dataQuitacao),
     }));
   }
@@ -50,7 +74,7 @@ export class LancamentosService {
     if (!lanc) throw new NotFoundException('Lançamento não encontrado');
 
     return {
-      ...lanc,
+      ...this.mapLancamentoJson(lanc),
       status: calcularStatus(lanc.dataVencimento, lanc.dataQuitacao),
     };
   }
@@ -61,20 +85,25 @@ export class LancamentosService {
       data.pessoaId,
       data.produtoId,
     );
-    const lanc = await this.repo.update(id, tenantId, {
+    const patch = {
       ...data,
       dataCompetencia: this.normalizeDateTime(data.dataCompetencia),
       dataVencimento: this.normalizeDateTime(data.dataVencimento),
       dataQuitacao: this.normalizeDateTime(data.dataQuitacao),
-    });
+    };
+    const lanc = await this.repo.update(id, tenantId, patch);
     if (!lanc) throw new NotFoundException('Lançamento não encontrado');
-    return lanc;
+    const json = this.mapLancamentoJson(lanc);
+    return {
+      ...json,
+      status: calcularStatus(lanc.dataVencimento, lanc.dataQuitacao),
+    };
   }
 
   async remove(id: string, tenantId: string) {
     const lanc = await this.repo.delete(id, tenantId);
     if (!lanc) throw new NotFoundException('Lançamento não encontrado');
-    return lanc;
+    return this.mapLancamentoJson(lanc);
   }
 
   private async ensureReferencesInTenant(

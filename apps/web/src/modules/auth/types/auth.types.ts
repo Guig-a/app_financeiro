@@ -1,3 +1,5 @@
+export type { SessionUser } from '@/shared/lib/auth';
+
 export type LoginInput = {
   email: string;
   password: string;
@@ -9,11 +11,4 @@ export type RegisterInput = {
   password: string;
   cpf?: string;
   cnpj?: string;
-};
-
-export type SessionUser = {
-  id: string;
-  email: string;
-  tenantId: string;
-  role: string;
 };

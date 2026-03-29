@@ -19,6 +19,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { CurrentUser } from '../commom/decorators/current-user.decorator';
+import type { AuthenticatedUser } from '../common/types/authenticated-user';
 
 @ApiTags('users')
 @Controller('users')
@@ -31,9 +32,7 @@ export class UsersController {
   @ApiOperation({ summary: 'Obter perfil do usuário autenticado' })
   @ApiResponse({ status: 200, description: 'Perfil do usuário' })
   @ApiResponse({ status: 401, description: 'Não autorizado' })
-  getProfile(
-    @CurrentUser() user: { userId: string; tenantId: string; role: string },
-  ) {
+  getProfile(@CurrentUser() user: AuthenticatedUser) {
     return this.service.findById(user.userId, user.tenantId);
   }
 
@@ -47,7 +46,7 @@ export class UsersController {
     description: 'Apenas MASTER pode criar usuários',
   })
   create(
-    @CurrentUser() user: { tenantId: string; role: string },
+    @CurrentUser() user: AuthenticatedUser,
     @Body() dto: CreateUserDto,
   ) {
     return this.service.create(user, dto);
@@ -59,8 +58,12 @@ export class UsersController {
   @ApiOperation({ summary: 'Listar todos os usuários' })
   @ApiResponse({ status: 200, description: 'Lista de usuários' })
   @ApiResponse({ status: 401, description: 'Não autorizado' })
-  findAll(@CurrentUser() user: { tenantId: string }) {
-    return this.service.findAll(user.tenantId);
+  @ApiResponse({
+    status: 403,
+    description: 'Apenas MASTER pode listar usuários',
+  })
+  findAll(@CurrentUser() user: AuthenticatedUser) {
+    return this.service.findAll(user);
   }
 
   @UseGuards(AuthGuard('jwt'))
@@ -73,7 +76,7 @@ export class UsersController {
     description: 'Apenas MASTER pode atualizar usuários',
   })
   update(
-    @CurrentUser() user: { tenantId: string; role: string },
+    @CurrentUser() user: AuthenticatedUser,
     @Param('id') id: string,
     @Body() dto: UpdateUserDto,
   ) {
@@ -89,10 +92,7 @@ export class UsersController {
     status: 403,
     description: 'Apenas MASTER pode remover usuários',
   })
-  remove(
-    @CurrentUser() user: { tenantId: string; role: string },
-    @Param('id') id: string,
-  ) {
+  remove(@CurrentUser() user: AuthenticatedUser, @Param('id') id: string) {
     return this.service.remove(user, id);
   }
 }

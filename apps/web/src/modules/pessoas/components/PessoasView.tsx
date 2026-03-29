@@ -7,6 +7,7 @@ import { Plus, UsersThree } from '@phosphor-icons/react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { usePessoas } from '../hooks/usePessoas';
 import { Pessoa, PessoaPayload, PessoaTipo } from '../types/pessoa.types';
+import { getApiErrorMessage } from '@/shared/lib/api';
 import { createPessoa, deletePessoa, updatePessoa } from '../services/pessoa.service';
 import { PageHeader } from '@/shared/components/layout/PageHeader';
 import { EmptyState } from '@/shared/components/feedback/EmptyState';
@@ -120,8 +121,8 @@ export function PessoasView() {
       setEditingRow(null);
       toast.success('Pessoa atualizada', 'Alterações salvas com sucesso.');
     },
-    onError: () => {
-      toast.error('Falha ao atualizar pessoa', 'Não foi possível salvar.');
+    onError: (err) => {
+      toast.error('Falha ao atualizar pessoa', getApiErrorMessage(err));
     },
   });
 
@@ -131,8 +132,8 @@ export function PessoasView() {
       await queryClient.invalidateQueries({ queryKey: ['pessoas'] });
       toast.success('Pessoa removida', 'Registro excluído com sucesso.');
     },
-    onError: () => {
-      toast.error('Falha ao excluir pessoa', 'Tente novamente em instantes.');
+    onError: (err) => {
+      toast.error('Não foi possível excluir', getApiErrorMessage(err));
     },
   });
 

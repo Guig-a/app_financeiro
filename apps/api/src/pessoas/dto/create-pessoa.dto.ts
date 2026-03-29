@@ -1,10 +1,7 @@
 import { IsEnum, IsOptional, IsString } from 'class-validator';
+import { TipoPessoa } from '../../../prisma/generated/client';
 
-export enum TipoPessoa {
-  CLIENTE = 'CLIENTE',
-  FORNECEDOR = 'FORNECEDOR',
-  AMBOS = 'AMBOS',
-}
+export { TipoPessoa };
 
 export class CreatePessoaDto {
   @IsString()
@@ -15,5 +12,5 @@ export class CreatePessoaDto {
 
   @IsOptional()
   @IsString()
-  documento?: string; // CPF/CNPJ
+  documento?: string;
 }

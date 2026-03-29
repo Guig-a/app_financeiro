@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { login } from '../services/auth.service';
 import { routes } from '@/config/routes';
+import { getApiErrorMessage } from '@/shared/lib/api';
 import { setFlashToast } from '@/shared/lib/toast';
 import { useToast } from '@/shared/providers/toast-provider';
 
@@ -29,9 +30,10 @@ export function LoginForm() {
       });
       router.push(routes.dashboard);
       router.refresh();
-    } catch {
-      setError('Credenciais inválidas.');
-      toast.error('Falha no login', 'Verifique e-mail e senha.');
+    } catch (err) {
+      const msg = getApiErrorMessage(err);
+      setError(msg);
+      toast.error('Falha no login', msg);
     } finally {
       setLoading(false);
     }

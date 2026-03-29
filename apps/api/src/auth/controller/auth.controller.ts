@@ -15,6 +15,7 @@ import { LoginDto } from '../dto/login.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { Throttle, SkipThrottle } from '@nestjs/throttler';
 import { CurrentUser } from '../../commom/decorators/current-user.decorator';
+import type { AuthenticatedUser } from '../../common/types/authenticated-user';
 import type { Response } from 'express';
 
 const ACCESS_TOKEN_COOKIE = 'access_token';
@@ -113,13 +114,7 @@ export class AuthController {
   @ApiResponse({ status: 401, description: 'Token inválido ou revogado' })
   async refresh(
     @Res({ passthrough: true }) res: Response,
-    @CurrentUser()
-    user: {
-      userId: string;
-      tenantId: string;
-      role: string;
-      jti?: string;
-    },
+    @CurrentUser() user: AuthenticatedUser & { jti?: string },
   ) {
     if (!user.jti) throw new UnauthorizedException('Invalid token');
     const session = await this.auth.refresh(user.userId, user.jti);
@@ -136,13 +131,7 @@ export class AuthController {
   @ApiResponse({ status: 401, description: 'Token inválido' })
   async logout(
     @Res({ passthrough: true }) res: Response,
-    @CurrentUser()
-    user: {
-      userId: string;
-      tenantId: string;
-      role: string;
-      jti?: string;
-    },
+    @CurrentUser() user: AuthenticatedUser & { jti?: string },
   ) {
     this.clearAuthCookies(res);
     if (user.jti) await this.auth.logout(user.userId, user.jti);

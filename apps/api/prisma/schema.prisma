@@ -1,5 +1,6 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
+// Enums espelhados na API (DTOs) onde necessário.
 
 generator client {
   provider = "prisma-client-js"
@@ -7,8 +8,31 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
+}
+
+enum Role {
+  MASTER
+  USER
+}
+
+enum TipoPessoa {
+  CLIENTE
+  FORNECEDOR
+  AMBOS
+}
+
+enum TipoLancamento {
+  RECEITA
+  DESPESA
+}
+
+enum UnidadeProduto {
+  KG
+  UN
+  CAIXA
+  FARDO
 }
 
 model User {
@@ -17,7 +41,7 @@ model User {
   tenant        Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   email         String         @unique
   passwordHash  String
-  role          String         @default("USER")
+  role          Role           @default(USER)
   createdAt     DateTime       @default(now())
   refreshTokens RefreshToken[]
 
@@ -40,8 +64,8 @@ model Tenant {
   id        String   @id @default(uuid())
   slug      String   @unique
   name      String
-  cpf       String?
-  cnpj      String?
+  cpf       String?  @unique
+  cnpj      String?  @unique
   createdAt DateTime @default(now())
   users     User[]
   pessoas   Pessoa[]
@@ -54,12 +78,13 @@ model Pessoa {
   tenantId  String
   tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   nome      String
-  tipo      String
+  tipo      TipoPessoa
   documento String?
   createdAt DateTime @default(now())
   lancamentos Lancamento[]
 
   @@index([tenantId])
+  @@unique([tenantId, documento])
 }
 
 model Produto {
@@ -68,8 +93,8 @@ model Produto {
   tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   nome      String
   codigo    String?
-  unidade   String?
-  preco     Float?
+  unidade   UnidadeProduto?
+  preco     Decimal? @db.Decimal(15, 2)
   createdAt DateTime @default(now())
   lancamentos Lancamento[]
 
@@ -78,21 +103,22 @@ model Produto {
 }
 
 model Lancamento {
-  id             String    @id @default(uuid())
-  tenantId       String
-  tenant         Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  descricao      String?
-  pessoaId       String?
-  pessoa         Pessoa?   @relation(fields: [pessoaId], references: [id])
-  produtoId      String?
-  produto        Produto?  @relation(fields: [produtoId], references: [id])
-  valor          Float
+  id              String          @id @default(uuid())
+  tenantId        String
+  tenant          Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  descricao       String?
+  pessoaId        String?
+  pessoa          Pessoa?         @relation(fields: [pessoaId], references: [id], onDelete: Restrict)
+  produtoId       String?
+  produto         Produto?        @relation(fields: [produtoId], references: [id], onDelete: Restrict)
+  valor           Decimal         @db.Decimal(15, 2)
   dataCompetencia DateTime
-  dataVencimento DateTime
-  dataQuitacao   DateTime?
-  tipo           String     // RECEITA | DESPESA
-  createdAt      DateTime @default(now())
+  dataVencimento  DateTime
+  dataQuitacao    DateTime?
+  tipo            TipoLancamento
+  createdAt       DateTime        @default(now())
 
   @@index([tenantId])
+  @@index([tenantId, dataVencimento])
+  @@index([tenantId, dataCompetencia])
 }
-

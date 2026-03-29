@@ -5,6 +5,7 @@ import { FormEvent, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { register } from '../services/auth.service';
 import { routes } from '@/config/routes';
+import { getApiErrorMessage } from '@/shared/lib/api';
 import { setFlashToast } from '@/shared/lib/toast';
 import { useToast } from '@/shared/providers/toast-provider';
 
@@ -40,9 +41,10 @@ export function RegisterForm() {
       });
       router.push(routes.dashboard);
       router.refresh();
-    } catch {
-      setError('Não foi possível criar sua conta. Verifique os dados.');
-      toast.error('Falha no cadastro', 'Revise os dados e tente novamente.');
+    } catch (err) {
+      const msg = getApiErrorMessage(err);
+      setError(msg);
+      toast.error('Falha no cadastro', msg);
     } finally {
       setLoading(false);
     }

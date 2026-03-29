@@ -2,16 +2,25 @@
 
 import type { Dispatch, FormEvent, SetStateAction } from 'react';
 import { FormModal } from '@/shared/components/layout/FormModal';
-import { Button, Input } from '@/shared/components/ui';
-import type { Produto, ProdutoPayload } from '../types/produto.types';
+import { Button, Input, Select } from '@/shared/components/ui';
+import {
+  UNIDADES_PRODUTO,
+  type Produto,
+  type ProdutoFormState,
+} from '../types/produto.types';
+
+const UNIDADE_SELECT_OPTIONS = UNIDADES_PRODUTO.map((u) => ({
+  label: u,
+  value: u,
+}));
 
 export type ProdutosModalsProps = {
   createOpen: boolean;
   editingRow: Produto | null;
-  createForm: ProdutoPayload;
-  setCreateForm: Dispatch<SetStateAction<ProdutoPayload>>;
-  editForm: ProdutoPayload;
-  setEditForm: Dispatch<SetStateAction<ProdutoPayload>>;
+  createForm: ProdutoFormState;
+  setCreateForm: Dispatch<SetStateAction<ProdutoFormState>>;
+  editForm: ProdutoFormState;
+  setEditForm: Dispatch<SetStateAction<ProdutoFormState>>;
   onCloseCreate: () => void;
   onCloseEdit: () => void;
   onSubmitCreate: (event: FormEvent<HTMLFormElement>) => void;
@@ -78,15 +87,16 @@ export default function ProdutosModals({
               }))
             }
           />
-          <Input
-            placeholder="Unidade (UN, KG...)"
-            value={createForm.unidade ?? ''}
-            onChange={(event) =>
+          <Select
+            placeholder="Unidade (opcional)"
+            value={createForm.unidade || undefined}
+            onValueChange={(value) =>
               setCreateForm((prev) => ({
                 ...prev,
-                unidade: event.target.value,
+                unidade: value as ProdutoFormState['unidade'],
               }))
             }
+            options={UNIDADE_SELECT_OPTIONS}
           />
           <Input
             type="number"
@@ -144,12 +154,16 @@ export default function ProdutosModals({
               setEditForm((prev) => ({ ...prev, codigo: event.target.value }))
             }
           />
-          <Input
-            placeholder="Unidade"
-            value={editForm.unidade ?? ''}
-            onChange={(event) =>
-              setEditForm((prev) => ({ ...prev, unidade: event.target.value }))
+          <Select
+            placeholder="Unidade (opcional)"
+            value={editForm.unidade || undefined}
+            onValueChange={(value) =>
+              setEditForm((prev) => ({
+                ...prev,
+                unidade: value as ProdutoFormState['unidade'],
+              }))
             }
+            options={UNIDADE_SELECT_OPTIONS}
           />
           <Input
             type="number"

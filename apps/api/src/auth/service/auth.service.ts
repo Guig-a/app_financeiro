@@ -10,6 +10,7 @@ import { JwtService } from '@nestjs/jwt';
 import * as crypto from 'crypto';
 import * as argon2 from 'argon2';
 import { Prisma, User } from '../../../prisma/generated/client';
+import { Role } from '../../common/types/role';
 import { RegisterDto } from '../dto/register.dto';
 import { LoginDto } from '../dto/login.dto';
 
@@ -83,7 +84,7 @@ export class AuthService implements OnModuleInit, OnModuleDestroy {
           tenantId: tenant.id,
           email: data.email,
           passwordHash: hashed,
-          role: 'MASTER',
+          role: Role.MASTER,
         },
       });
     });

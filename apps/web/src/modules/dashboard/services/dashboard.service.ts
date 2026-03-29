@@ -1,4 +1,5 @@
 import { cookies } from 'next/headers';
+import type { Role } from '@/shared/types/role';
 import type { DashboardViewModel } from '../types/dashboard.types';
 import {
   buildDashboardViewModel,
@@ -14,7 +15,7 @@ const API_BASE_URL =
 type UserResponse = {
   email: string;
   tenantId: string;
-  role: string;
+  role: Role;
 };
 
 async function fetchWithSession<T>(path: string): Promise<T | null> {

@@ -5,11 +5,9 @@ import {
   IsOptional,
   IsString,
 } from 'class-validator';
+import { TipoLancamento } from '../../../prisma/generated/client';
 
-export enum TipoLancamento {
-  RECEITA = 'RECEITA',
-  DESPESA = 'DESPESA',
-}
+export { TipoLancamento };
 
 export class CreateLancamentoDto {
   @IsOptional()

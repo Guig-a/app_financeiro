@@ -1,3 +1,5 @@
+import type { Role } from '@/shared/types/role';
+
 /** Dados agregados para a view (MVVM) — montados no servidor. */
 export type DashboardChartPoint = {
   /** Chave estável YYYY-MM */
@@ -11,7 +13,7 @@ export type DashboardChartPoint = {
 export type DashboardViewModel = {
   userEmail: string;
   tenantId: string;
-  role: string;
+  role: Role;
   /** Ex.: "março 2026" para o cabeçalho do dashboard */
   periodLabel: string;
   totalLancamentos: number;

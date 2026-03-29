@@ -1,9 +1,26 @@
 'use client';
 
-import type { Dispatch, FormEvent, SetStateAction } from 'react';
+import type { Dispatch, FormEvent, ReactNode, SetStateAction } from 'react';
 import { FormModal } from '@/shared/components/layout/FormModal';
 import { Button, Input, Select } from '@/shared/components/ui';
 import type { Lancamento, LancamentoPayload } from '../types/lancamento.types';
+
+function FieldLabel({
+  htmlFor,
+  children,
+}: {
+  htmlFor: string;
+  children: ReactNode;
+}) {
+  return (
+    <label
+      htmlFor={htmlFor}
+      className="block text-xs font-medium text-[var(--color-text-muted)]"
+    >
+      {children}
+    </label>
+  );
+}
 
 export type LancamentoModalsProps = {
   createOpen: boolean;
@@ -124,38 +141,50 @@ export default function LancamentoModals({
               }))
             }
           />
-          <Input
-            type="date"
-            value={createForm.dataCompetencia}
-            onChange={(event) =>
-              setCreateForm((prev) => ({
-                ...prev,
-                dataCompetencia: event.target.value,
-              }))
-            }
-            required
-          />
-          <Input
-            type="date"
-            value={createForm.dataVencimento}
-            onChange={(event) =>
-              setCreateForm((prev) => ({
-                ...prev,
-                dataVencimento: event.target.value,
-              }))
-            }
-            required
-          />
-          <Input
-            type="date"
-            value={createForm.dataQuitacao ?? ''}
-            onChange={(event) =>
-              setCreateForm((prev) => ({
-                ...prev,
-                dataQuitacao: event.target.value,
-              }))
-            }
-          />
+          <div className="space-y-1">
+            <FieldLabel htmlFor="lanc-create-comp">Data de competência</FieldLabel>
+            <Input
+              id="lanc-create-comp"
+              type="date"
+              value={createForm.dataCompetencia}
+              onChange={(event) =>
+                setCreateForm((prev) => ({
+                  ...prev,
+                  dataCompetencia: event.target.value,
+                }))
+              }
+              required
+            />
+          </div>
+          <div className="space-y-1">
+            <FieldLabel htmlFor="lanc-create-venc">Data de vencimento</FieldLabel>
+            <Input
+              id="lanc-create-venc"
+              type="date"
+              value={createForm.dataVencimento}
+              onChange={(event) =>
+                setCreateForm((prev) => ({
+                  ...prev,
+                  dataVencimento: event.target.value,
+                }))
+              }
+              required
+            />
+          </div>
+          <div className="space-y-1">
+            <FieldLabel htmlFor="lanc-create-quit">Data de quitação (opcional)</FieldLabel>
+            <Input
+              id="lanc-create-quit"
+              type="date"
+              value={createForm.dataQuitacao ?? ''}
+              onChange={(event) =>
+                setCreateForm((prev) => ({
+                  ...prev,
+                  dataQuitacao: event.target.value,
+                }))
+              }
+            />
+          </div>
           {createError ? (
             <p className="text-sm text-(--color-danger)">{extractError(createError)}</p>
           ) : null}
@@ -245,38 +274,50 @@ export default function LancamentoModals({
               }))
             }
           />
-          <Input
-            type="date"
-            value={editForm.dataCompetencia}
-            onChange={(event) =>
-              setEditForm((prev) => ({
-                ...prev,
-                dataCompetencia: event.target.value,
-              }))
-            }
-            required
-          />
-          <Input
-            type="date"
-            value={editForm.dataVencimento}
-            onChange={(event) =>
-              setEditForm((prev) => ({
-                ...prev,
-                dataVencimento: event.target.value,
-              }))
-            }
-            required
-          />
-          <Input
-            type="date"
-            value={editForm.dataQuitacao ?? ''}
-            onChange={(event) =>
-              setEditForm((prev) => ({
-                ...prev,
-                dataQuitacao: event.target.value,
-              }))
-            }
-          />
+          <div className="space-y-1">
+            <FieldLabel htmlFor="lanc-edit-comp">Data de competência</FieldLabel>
+            <Input
+              id="lanc-edit-comp"
+              type="date"
+              value={editForm.dataCompetencia}
+              onChange={(event) =>
+                setEditForm((prev) => ({
+                  ...prev,
+                  dataCompetencia: event.target.value,
+                }))
+              }
+              required
+            />
+          </div>
+          <div className="space-y-1">
+            <FieldLabel htmlFor="lanc-edit-venc">Data de vencimento</FieldLabel>
+            <Input
+              id="lanc-edit-venc"
+              type="date"
+              value={editForm.dataVencimento}
+              onChange={(event) =>
+                setEditForm((prev) => ({
+                  ...prev,
+                  dataVencimento: event.target.value,
+                }))
+              }
+              required
+            />
+          </div>
+          <div className="space-y-1">
+            <FieldLabel htmlFor="lanc-edit-quit">Data de quitação (opcional)</FieldLabel>
+            <Input
+              id="lanc-edit-quit"
+              type="date"
+              value={editForm.dataQuitacao ?? ''}
+              onChange={(event) =>
+                setEditForm((prev) => ({
+                  ...prev,
+                  dataQuitacao: event.target.value,
+                }))
+              }
+            />
+          </div>
           {updateError ? (
             <p className="text-sm text-(--color-danger)">{extractError(updateError)}</p>
           ) : null}

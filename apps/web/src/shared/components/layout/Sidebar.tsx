@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useMemo } from 'react';
 import {
   ChartPieSlice,
   Package,
@@ -15,6 +16,7 @@ import { routes } from '@/config/routes';
 import { logout } from '@/modules/auth/services/auth.service';
 import { setFlashToast } from '@/shared/lib/toast';
 import type { SessionUser } from '@/shared/lib/auth';
+import { Role } from '@/shared/types/role';
 
 type NavItem = {
   href: string;
@@ -22,26 +24,31 @@ type NavItem = {
   icon: typeof ChartPieSlice;
 };
 
-const groups: { title: string; items: NavItem[] }[] = [
-  {
-    title: 'VISÃO GERAL',
-    items: [
-      { href: routes.dashboard, label: 'Dashboard', icon: ChartPieSlice },
-    ],
-  },
-  {
-    title: 'FINANCEIRO',
-    items: [
-      { href: routes.lancamentos, label: 'Lançamentos', icon: Receipt },
-      { href: routes.pessoas, label: 'Pessoas', icon: UsersThree },
-      { href: routes.produtos, label: 'Produtos', icon: Package },
-    ],
-  },
-  {
-    title: 'CONFIG',
+function buildNavGroups(showUsuarios: boolean): { title: string; items: NavItem[] }[] {
+  const base: { title: string; items: NavItem[] }[] = [
+    {
+      title: 'VISÃO GERAL',
+      items: [
+        { href: routes.dashboard, label: 'Dashboard', icon: ChartPieSlice },
+      ],
+    },
+    {
+      title: 'FINANCEIRO',
+      items: [
+        { href: routes.lancamentos, label: 'Lançamentos', icon: Receipt },
+        { href: routes.pessoas, label: 'Pessoas', icon: UsersThree },
+        { href: routes.produtos, label: 'Produtos', icon: Package },
+      ],
+    },
+  ];
+  if (showUsuarios) {
+    base.push({
+      title: 'CONFIG',
       items: [{ href: routes.usuarios, label: 'Usuários', icon: UserGear }],
-  },
-];
+    });
+  }
+  return base;
+}
 
 function navActive(pathname: string, href: string): boolean {
   if (href === routes.dashboard) return pathname === href;
@@ -64,6 +71,10 @@ type SidebarProps = {
 export function Sidebar({ user }: SidebarProps) {
   const pathname = usePathname();
   const tenantLabel = user.tenant?.name ?? 'Organização';
+  const groups = useMemo(
+    () => buildNavGroups(user.role === Role.MASTER),
+    [user.role],
+  );
 
   return (
     <aside className="flex w-64 flex-col border-r border-(--color-border) bg-(--color-surface)">

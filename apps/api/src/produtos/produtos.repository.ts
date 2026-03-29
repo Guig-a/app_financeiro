@@ -26,6 +26,12 @@ export class ProdutosRepository {
     return this.prisma.produto.findFirst({ where: { id, tenantId } });
   }
 
+  countLancamentosVinculados(produtoId: string, tenantId: string) {
+    return this.prisma.lancamento.count({
+      where: { tenantId, produtoId },
+    });
+  }
+
   findByCodigo(codigo: string, tenantId: string) {
     return this.prisma.produto.findFirst({ where: { codigo, tenantId } });
   }
@@ -42,7 +48,7 @@ export class ProdutosRepository {
   async delete(id: string, tenantId: string) {
     const produto = await this.findById(id, tenantId);
     if (!produto) return null;
-    await this.prisma.produto.delete({ where: { id } });
+    await this.prisma.produto.deleteMany({ where: { id, tenantId } });
     return produto;
   }
 

@@ -1,10 +1,11 @@
 import { cookies } from 'next/headers';
+import type { Role } from '@/shared/types/role';
 
 export type SessionUser = {
   id: string;
   email: string;
   tenantId: string;
-  role: string;
+  role: Role;
   tenant?: { name: string; slug: string };
 };
 

@@ -16,10 +16,12 @@ import { FilterBar } from '@/shared/components/filter-bar';
 import { Button, EmptyCell, StatusBadge } from '@/shared/components/ui';
 import { DataTable, useDataTableState } from '@/shared/components/data-table';
 import { Lancamento, LancamentoPayload } from '../types/lancamento.types';
+import { labelLancamentoStatus } from '../lib/status-label';
 import {
   formatCompetenciaMonthYear,
   formatCurrencyThin,
 } from '@/shared/lib/format';
+import { getApiErrorMessage } from '@/shared/lib/api';
 import { cn } from '@/shared/lib/utils';
 import {
   createLancamento,
@@ -57,6 +59,19 @@ function buildColumns(): ColumnDef<Lancamento>[] {
           <StatusBadge variant={tipo === 'RECEITA' ? 'success' : 'danger'}>
             {tipo === 'RECEITA' ? 'Receita' : 'Despesa'}
           </StatusBadge>
+        );
+      },
+    },
+    {
+      accessorKey: 'status',
+      header: 'Status',
+      cell: ({ row }) => {
+        const s = row.original.status;
+        if (!s) return <EmptyCell />;
+        const variant =
+          s === 'PAGO' ? 'success' : s === 'EM_ATRASO' ? 'danger' : 'warning';
+        return (
+          <StatusBadge variant={variant}>{labelLancamentoStatus(s)}</StatusBadge>
         );
       },
     },
@@ -177,11 +192,8 @@ export function LancamentosView() {
       closeCreateModal();
       toast.success('Lançamento criado', 'Novo lançamento registrado.');
     },
-    onError: () => {
-      toast.error(
-        'Falha ao criar lançamento',
-        'Confira as datas e os campos obrigatórios.',
-      );
+    onError: (err) => {
+      toast.error('Falha ao criar lançamento', getApiErrorMessage(err));
     },
   });
 
@@ -193,11 +205,8 @@ export function LancamentosView() {
       setEditingRow(null);
       toast.success('Lançamento atualizado', 'Alterações aplicadas com sucesso.');
     },
-    onError: () => {
-      toast.error(
-        'Falha ao atualizar lançamento',
-        'Não foi possível salvar as alterações.',
-      );
+    onError: (err) => {
+      toast.error('Falha ao atualizar lançamento', getApiErrorMessage(err));
     },
   });
 
@@ -207,8 +216,8 @@ export function LancamentosView() {
       await queryClient.invalidateQueries({ queryKey: ['lancamentos'] });
       toast.success('Lançamento removido', 'Registro excluído com sucesso.');
     },
-    onError: () => {
-      toast.error('Falha ao excluir lançamento', 'Tente novamente em instantes.');
+    onError: (err) => {
+      toast.error('Falha ao excluir lançamento', getApiErrorMessage(err));
     },
   });
 

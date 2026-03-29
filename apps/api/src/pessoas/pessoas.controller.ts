@@ -33,6 +33,10 @@ export class PessoasController {
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Criar nova pessoa (cliente/fornecedor)' })
   @ApiResponse({ status: 201, description: 'Pessoa criada com sucesso' })
+  @ApiResponse({
+    status: 409,
+    description: 'Documento já cadastrado nesta organização',
+  })
   create(
     @CurrentUser() user: { tenantId: string },
     @Body() dto: CreatePessoaDto,
@@ -67,6 +71,10 @@ export class PessoasController {
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Atualizar pessoa' })
   @ApiResponse({ status: 200, description: 'Pessoa atualizada' })
+  @ApiResponse({
+    status: 409,
+    description: 'Documento já cadastrado nesta organização',
+  })
   update(
     @CurrentUser() user: { tenantId: string },
     @Param('id') id: string,
