@@ -8,6 +8,7 @@ import { PessoasModule } from '../pessoas/pessoas.module';
 import { ProdutosModule } from '../produtos/produtos.module';
 import { LancamentosModule } from '../lancamentos/lancamentos.module';
 import { PrismaModule } from '../database/prisma.module';
+import { HealthModule } from '../health/health.module';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { PrismaModule } from '../database/prisma.module';
       { name: 'auth', ttl: 10000, limit: 10 },
     ]),
     PrismaModule,
+    HealthModule,
     AuthModule,
     UsersModule,
     PessoasModule,

@@ -1,0 +1,13 @@
+{
+  "$schema": "https://railway.com/railway.schema.json",
+  "build": {
+    "builder": "RAILPACK",
+    "buildCommand": "pnpm install && pnpm turbo run build --filter=@financeiro/web",
+    "watchPatterns": ["apps/web/**", "packages/**", "pnpm-lock.yaml", "turbo.json"]
+  },
+  "deploy": {
+    "startCommand": "pnpm --filter @financeiro/web start",
+    "healthcheckPath": "/",
+    "restartPolicyType": "ON_FAILURE"
+  }
+}

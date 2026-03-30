@@ -99,4 +99,4 @@ docker compose stop postgres-e2e
 
 ---
 
-MIT License — veja [LICENSE](./LICENSE) para detalhes.
+MIT License
