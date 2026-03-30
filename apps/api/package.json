@@ -4,7 +4,7 @@
   "description": "",
   "author": "Guilherme Camargo",
   "private": true,
-  "license": "UNLICENSED",
+  "license": "MIT",
   "scripts": {
     "prisma:generate": "prisma generate",
     "typecheck": "prisma generate && tsc --noEmit",
