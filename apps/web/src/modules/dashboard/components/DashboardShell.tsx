@@ -1,12 +1,33 @@
+'use client';
+
+import { useEffect, useState } from 'react';
 import { getDashboardViewModel } from '../services/dashboard.service';
+import type { DashboardViewModel } from '../types/dashboard.types';
 import { DashboardPageHeader } from './DashboardPageHeader';
 import { KpiCard } from './KpiCard';
 import { DashboardChartsHost } from './DashboardChartsHost';
 import { EmptyState } from '@/shared/components/feedback/EmptyState';
 import { formatCurrency } from '@/shared/lib/format';
 
-export async function DashboardShell() {
-  const vm = await getDashboardViewModel();
+export function DashboardShell() {
+  const [vm, setVm] = useState<DashboardViewModel | null | undefined>(undefined);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const data = await getDashboardViewModel();
+      if (!cancelled) setVm(data);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  if (vm === undefined) {
+    return (
+      <p className="text-sm text-(--color-text-muted)">Carregando dashboard…</p>
+    );
+  }
 
   if (!vm) {
     return (
@@ -70,9 +91,8 @@ export async function DashboardShell() {
         <DashboardChartsHost chartSeries={vm.chartSeries} />
       </div>
 
-      <p className="mt-4 text-xs text-[var(--color-text-muted)]">
-        KPIs agregados no servidor (SSR) · gráfico carregado no cliente (chunk
-        lazy).
+      <p className="mt-4 text-xs text-(--color-text-muted)">
+        KPIs carregados no cliente (cookies da API) · gráfico lazy no cliente.
       </p>
     </section>
   );
