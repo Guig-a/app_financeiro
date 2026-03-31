@@ -75,12 +75,17 @@ api.interceptors.response.use(
     } catch (refreshError) {
       flushQueue(refreshError);
       if (typeof window !== 'undefined') {
-        setFlashToast({
-          title: 'Sessão expirada',
-          description: 'Faça login novamente para continuar.',
-          variant: 'warning',
-        });
-        window.location.href = routes.login;
+        const path = window.location.pathname;
+        const onPublicAuthPage =
+          path === routes.login || path === routes.register;
+        if (!onPublicAuthPage) {
+          setFlashToast({
+            title: 'Sessão expirada',
+            description: 'Faça login novamente para continuar.',
+            variant: 'warning',
+          });
+          window.location.href = routes.login;
+        }
       }
       return Promise.reject(refreshError);
     } finally {
