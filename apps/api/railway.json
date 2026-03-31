@@ -7,9 +7,6 @@
   },
   "deploy": {
     "startCommand": "pnpm --filter @financeiro/api start:prod",
-    "preDeployCommand": [
-      "pnpm --filter @financeiro/api exec prisma migrate deploy"
-    ],
     "healthcheckPath": "/health",
     "restartPolicyType": "ON_FAILURE"
   }
