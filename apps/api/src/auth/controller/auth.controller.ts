@@ -34,23 +34,33 @@ export class AuthController {
     return process.env.NODE_ENV === 'production';
   }
 
+  /**
+   * Em produção o front e a API estão em origens diferentes.
+   * `SameSite=Lax` não envia cookies em pedidos cross-site (fetch com credentials);
+   * `None` + `Secure` é necessário para o browser incluir cookies na API.
+   */
+  private cookieSameSite(): 'lax' | 'none' {
+    return this.isProduction() ? 'none' : 'lax';
+  }
+
   private setAuthCookies(
     response: Response,
     accessToken: string,
     refreshToken: string,
   ) {
     const secure = this.isProduction();
+    const sameSite = this.cookieSameSite();
     response.cookie(ACCESS_TOKEN_COOKIE, accessToken, {
       httpOnly: true,
       secure,
-      sameSite: 'lax',
+      sameSite,
       path: '/',
       maxAge: ACCESS_TTL_MS,
     });
     response.cookie(REFRESH_TOKEN_COOKIE, refreshToken, {
       httpOnly: true,
       secure,
-      sameSite: 'lax',
+      sameSite,
       path: REFRESH_COOKIE_PATH,
       maxAge: REFRESH_TTL_MS,
     });
@@ -58,16 +68,17 @@ export class AuthController {
 
   private clearAuthCookies(response: Response) {
     const secure = this.isProduction();
+    const sameSite = this.cookieSameSite();
     response.clearCookie(ACCESS_TOKEN_COOKIE, {
       httpOnly: true,
       secure,
-      sameSite: 'lax',
+      sameSite,
       path: '/',
     });
     response.clearCookie(REFRESH_TOKEN_COOKIE, {
       httpOnly: true,
       secure,
-      sameSite: 'lax',
+      sameSite,
       path: REFRESH_COOKIE_PATH,
     });
   }
