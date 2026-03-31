@@ -77,7 +77,7 @@ api.interceptors.response.use(
       if (typeof window !== 'undefined') {
         const path = window.location.pathname;
         const onPublicAuthPage =
-          path === routes.login || path === routes.register;
+          path === '/' || path === routes.login || path === routes.register;
         if (!onPublicAuthPage) {
           setFlashToast({
             title: 'Sessão expirada',

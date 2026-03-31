@@ -40,29 +40,31 @@ function normalizePessoas(raw: unknown[]): PessoaRow[] {
 
 /** Dados do dashboard via API (cookies no domínio da API; usar só no cliente). */
 export async function getDashboardViewModel(): Promise<DashboardViewModel | null> {
-  try {
-    const [user, lancamentosRaw, produtos, usuarios, pessoasRaw] =
-      await Promise.all([
-        apiFetch<UserResponse>('/users/me', { method: 'GET' }),
-        apiFetch<unknown[]>('/lancamentos', { method: 'GET' }),
-        apiFetch<unknown[]>('/produtos', { method: 'GET' }),
-        apiFetch<unknown[]>('/users', { method: 'GET' }),
-        apiFetch<unknown[]>('/pessoas', { method: 'GET' }),
-      ]);
+  const [userRes, lancamentosRes, produtosRes, usuariosRes, pessoasRes] =
+    await Promise.allSettled([
+      apiFetch<UserResponse>('/users/me', { method: 'GET' }),
+      apiFetch<unknown[]>('/lancamentos', { method: 'GET' }),
+      apiFetch<unknown[]>('/produtos', { method: 'GET' }),
+      apiFetch<unknown[]>('/users', { method: 'GET' }),
+      apiFetch<unknown[]>('/pessoas', { method: 'GET' }),
+    ]);
 
-    if (!user) return null;
+  if (userRes.status !== 'fulfilled' || !userRes.value) return null;
 
-    const lancamentos = normalizeLancamentos(lancamentosRaw ?? []);
-    const pessoas = normalizePessoas(pessoasRaw ?? []);
+  const lancamentosRaw =
+    lancamentosRes.status === 'fulfilled' ? lancamentosRes.value : [];
+  const produtos = produtosRes.status === 'fulfilled' ? produtosRes.value : [];
+  const usuarios = usuariosRes.status === 'fulfilled' ? usuariosRes.value : [];
+  const pessoasRaw = pessoasRes.status === 'fulfilled' ? pessoasRes.value : [];
 
-    return buildDashboardViewModel({
-      user,
-      lancamentos,
-      produtos: produtos ?? [],
-      usuarios: usuarios ?? [],
-      pessoas,
-    });
-  } catch {
-    return null;
-  }
+  const lancamentos = normalizeLancamentos(lancamentosRaw ?? []);
+  const pessoas = normalizePessoas(pessoasRaw ?? []);
+
+  return buildDashboardViewModel({
+    user: userRes.value,
+    lancamentos,
+    produtos: produtos ?? [],
+    usuarios: usuarios ?? [],
+    pessoas,
+  });
 }
