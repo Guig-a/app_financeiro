@@ -11,12 +11,13 @@ export default function RegisterPage() {
               Financeiro App
             </p>
             <h2 className="mt-6 max-w-sm text-3xl font-semibold leading-snug">
-              Comece com seu próprio tenant em poucos minutos.
+              Sua organização no ar em poucos minutos — você no comando desde o primeiro
+              acesso.
             </h2>
           </div>
-          <p className="max-w-xs text-sm opacity-90">
-            Seu usuário será criado como MASTER e terá controle completo sobre os
-            dados do tenant.
+          <p className="max-w-sm text-sm leading-relaxed opacity-90">
+            A conta inicial é criada como perfil MASTER: você define quem acessa o
+            sistema e mantém visão completa dos dados da sua empresa.
           </p>
         </section>
         <section className="flex items-center justify-center">

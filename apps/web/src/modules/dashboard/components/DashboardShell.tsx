@@ -90,10 +90,6 @@ export function DashboardShell() {
       <div className="mt-6">
         <DashboardChartsHost chartSeries={vm.chartSeries} />
       </div>
-
-      <p className="mt-4 text-xs text-(--color-text-muted)">
-        KPIs carregados no cliente (cookies da API) · gráfico lazy no cliente.
-      </p>
     </section>
   );
 }

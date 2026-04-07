@@ -18,7 +18,14 @@ async function bootstrap() {
   const config = new DocumentBuilder()
     .setTitle('Financeiro App API')
     .setDescription(
-      'API para gestão financeira - Lançamentos, Pessoas, Produtos e Autenticação',
+      [
+        'API multi-tenant: lançamentos, pessoas, produtos, usuários e autenticação.',
+        '',
+        'Autenticação (web): após POST /auth/login ou /auth/register, o access token vai em cookie httpOnly access_token (path /); o refresh em refresh_token (path /auth). O Passport lê o JWT do cookie.',
+        'Produção (origens diferentes): cookies SameSite=None e Secure; CORS com credenciais.',
+        '',
+        'No Swagger UI: Authorize → JWT-auth (Bearer no header) ou cookie-access (valor do token no cookie access_token).',
+      ].join('\n'),
     )
     .setVersion('1.0')
     .addBearerAuth(
@@ -26,13 +33,24 @@ async function bootstrap() {
         type: 'http',
         scheme: 'bearer',
         bearerFormat: 'JWT',
-        name: 'JWT',
-        description: 'Enter JWT token',
+        name: 'Authorization',
+        description:
+          'JWT no header (útil para testes). No browser, o fluxo normal usa cookie.',
         in: 'header',
       },
       'JWT-auth',
     )
+    .addApiKey(
+      {
+        type: 'apiKey',
+        in: 'cookie',
+        name: 'access_token',
+        description: 'Mesmo valor do access token (fluxo cookie).',
+      },
+      'cookie-access',
+    )
     .addTag('auth', 'Autenticação e autorização')
+    .addTag('health', 'Disponibilidade do serviço')
     .addTag('users', 'Gerenciamento de usuários')
     .addTag('pessoas', 'Clientes e fornecedores')
     .addTag('produtos', 'Cadastro de produtos')

@@ -9,6 +9,29 @@ import { getApiErrorMessage } from '@/shared/lib/api';
 import { setFlashToast } from '@/shared/lib/toast';
 import { useToast } from '@/shared/providers/toast-provider';
 
+function onlyDigits(value: string) {
+  return value.replace(/\D/g, '');
+}
+
+function maskCpf(d: string) {
+  const x = d.slice(0, 11);
+  if (x.length <= 3) return x;
+  if (x.length <= 6) return `${x.slice(0, 3)}.${x.slice(3)}`;
+  if (x.length <= 9) return `${x.slice(0, 3)}.${x.slice(3, 6)}.${x.slice(6)}`;
+  return `${x.slice(0, 3)}.${x.slice(3, 6)}.${x.slice(6, 9)}-${x.slice(9)}`;
+}
+
+function maskCnpj(d: string) {
+  const x = d.slice(0, 14);
+  if (x.length <= 2) return x;
+  if (x.length <= 5) return `${x.slice(0, 2)}.${x.slice(2)}`;
+  if (x.length <= 8) return `${x.slice(0, 2)}.${x.slice(2, 5)}.${x.slice(5)}`;
+  if (x.length <= 12) {
+    return `${x.slice(0, 2)}.${x.slice(2, 5)}.${x.slice(5, 8)}/${x.slice(8)}`;
+  }
+  return `${x.slice(0, 2)}.${x.slice(2, 5)}.${x.slice(5, 8)}/${x.slice(8, 12)}-${x.slice(12)}`;
+}
+
 type RegisterMode = 'cnpj' | 'cpf';
 
 export function RegisterForm() {
@@ -27,16 +50,17 @@ export function RegisterForm() {
     setError(null);
     setLoading(true);
 
+    const docDigits = onlyDigits(documentValue);
     const payload =
       documentMode === 'cnpj'
-        ? { name, email, password, cnpj: documentValue }
-        : { name, email, password, cpf: documentValue };
+        ? { name, email, password, cnpj: docDigits }
+        : { name, email, password, cpf: docDigits };
 
     try {
       await register(payload);
       setFlashToast({
         title: 'Conta criada com sucesso',
-        description: 'Seu tenant foi provisionado e você já está autenticado.',
+        description: 'Sua organização foi criada e você já está autenticado.',
         variant: 'success',
       });
       router.push(routes.dashboard);
@@ -53,36 +77,36 @@ export function RegisterForm() {
   return (
     <form
       onSubmit={handleSubmit}
-      className="w-full max-w-md rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] p-7 shadow-sm"
+      className="w-full max-w-md rounded-xl border border-(--color-border) bg-(--color-surface) p-7 shadow-sm"
     >
-      <h1 className="mb-1 text-2xl font-semibold">Crie seu tenant</h1>
-      <p className="mb-6 text-sm text-[var(--color-text-muted)]">
-        Cadastre seu acesso master para começar.
+      <h1 className="mb-1 text-2xl font-semibold">Crie sua organização</h1>
+      <p className="mb-6 text-sm text-(--color-text-muted)">
+        Preencha os dados abaixo — você será o administrador principal.
       </p>
 
-      <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">
+      <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-(--color-text-muted)">
         Nome da empresa
       </label>
       <input
         type="text"
         value={name}
         onChange={(event) => setName(event.target.value)}
-        className="mb-4 w-full rounded-md border border-[var(--color-border)] bg-transparent px-3 py-2 text-sm outline-none focus:border-[var(--color-primary)]"
+        className="mb-4 w-full rounded-md border border-(--color-border) bg-transparent px-3 py-2 text-sm outline-none focus:border-(--color-primary)"
         required
       />
 
-      <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">
+      <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-(--color-text-muted)">
         E-mail
       </label>
       <input
         type="email"
         value={email}
         onChange={(event) => setEmail(event.target.value)}
-        className="mb-4 w-full rounded-md border border-[var(--color-border)] bg-transparent px-3 py-2 text-sm outline-none focus:border-[var(--color-primary)]"
+        className="mb-4 w-full rounded-md border border-(--color-border) bg-transparent px-3 py-2 text-sm outline-none focus:border-(--color-primary)"
         required
       />
 
-      <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">
+      <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-(--color-text-muted)">
         Senha
       </label>
       <input
@@ -90,19 +114,23 @@ export function RegisterForm() {
         value={password}
         onChange={(event) => setPassword(event.target.value)}
         minLength={6}
-        className="mb-4 w-full rounded-md border border-[var(--color-border)] bg-transparent px-3 py-2 text-sm outline-none focus:border-[var(--color-primary)]"
+        className="mb-4 w-full rounded-md border border-(--color-border) bg-transparent px-3 py-2 text-sm outline-none focus:border-(--color-primary)"
         required
       />
 
-      <div className="mb-2 flex rounded-md border border-[var(--color-border)] p-1">
+      <div className="mb-2 flex rounded-md border border-(--color-border) p-1">
         <button
           type="button"
           className={`flex-1 rounded px-2 py-1 text-xs ${
             documentMode === 'cnpj'
-              ? 'bg-[var(--color-primary)] text-[var(--color-primary-contrast)]'
-              : 'text-[var(--color-text-muted)]'
+              ? 'bg-(--color-primary) text-(--color-primary-contrast)'
+              : 'text-(--color-text-muted)'
           }`}
-          onClick={() => setDocumentMode('cnpj')}
+          onClick={() => {
+            const d = onlyDigits(documentValue);
+            setDocumentMode('cnpj');
+            setDocumentValue(maskCnpj(d));
+          }}
         >
           CNPJ
         </button>
@@ -110,10 +138,14 @@ export function RegisterForm() {
           type="button"
           className={`flex-1 rounded px-2 py-1 text-xs ${
             documentMode === 'cpf'
-              ? 'bg-[var(--color-primary)] text-[var(--color-primary-contrast)]'
-              : 'text-[var(--color-text-muted)]'
+              ? 'bg-(--color-primary) text-(--color-primary-contrast)'
+              : 'text-(--color-text-muted)'
           }`}
-          onClick={() => setDocumentMode('cpf')}
+          onClick={() => {
+            const d = onlyDigits(documentValue);
+            setDocumentMode('cpf');
+            setDocumentValue(maskCpf(d));
+          }}
         >
           CPF
         </button>
@@ -121,28 +153,38 @@ export function RegisterForm() {
 
       <input
         type="text"
+        inputMode="numeric"
+        autoComplete="off"
         value={documentValue}
-        onChange={(event) => setDocumentValue(event.target.value)}
-        placeholder={documentMode === 'cnpj' ? 'CNPJ' : 'CPF'}
-        className="mb-4 w-full rounded-md border border-[var(--color-border)] bg-transparent px-3 py-2 text-sm outline-none focus:border-[var(--color-primary)]"
+        onChange={(event) => {
+          const digits = onlyDigits(event.target.value);
+          setDocumentValue(
+            documentMode === 'cnpj' ? maskCnpj(digits) : maskCpf(digits),
+          );
+        }}
+        placeholder={
+          documentMode === 'cnpj' ? '00.000.000/0000-00' : '000.000.000-00'
+        }
+        maxLength={documentMode === 'cnpj' ? 18 : 14}
+        className="mb-4 w-full rounded-md border border-(--color-border) bg-transparent px-3 py-2 text-sm outline-none focus:border-(--color-primary)"
         required
       />
 
       {error ? (
-        <p className="mb-4 text-sm text-[var(--color-danger)]">{error}</p>
+        <p className="mb-4 text-sm text-(--color-danger)">{error}</p>
       ) : null}
 
       <button
         type="submit"
         disabled={loading}
-        className="w-full rounded-md bg-[var(--color-primary)] px-3 py-2 text-sm font-medium text-[var(--color-primary-contrast)] transition hover:opacity-90 disabled:opacity-70"
+        className="w-full rounded-md bg-(--color-primary) px-3 py-2 text-sm font-medium text-(--color-primary-contrast) transition hover:opacity-90 disabled:opacity-70"
       >
         {loading ? 'Criando conta...' : 'Criar conta'}
       </button>
 
-      <p className="mt-4 text-center text-sm text-[var(--color-text-muted)]">
+      <p className="mt-4 text-center text-sm text-(--color-text-muted)">
         Já tem conta?{' '}
-        <Link href={routes.login} className="text-[var(--color-primary)]">
+        <Link href={routes.login} className="text-(--color-primary)">
           Entrar
         </Link>
       </p>

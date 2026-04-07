@@ -11,12 +11,11 @@ export default function LoginPage() {
               Financeiro App
             </p>
             <h2 className="mt-6 max-w-sm text-3xl font-semibold leading-snug">
-              Gestão financeira multi-tenant com foco em operação diária.
+              Controle financeiro claro para quem vive da operação do dia a dia.
             </h2>
           </div>
-          <p className="max-w-xs text-sm opacity-90">
-            Controle lançamentos, produtos e usuários com isolamento por tenant e
-            autenticação segura por cookies httpOnly.
+          <p className="max-w-sm text-sm leading-relaxed opacity-90">
+            Lançamentos, produtos e equipe — cada empresa no seu ambiente isolado.
           </p>
         </section>
         <section className="flex items-center justify-center">

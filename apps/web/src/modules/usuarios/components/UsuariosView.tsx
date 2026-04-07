@@ -47,15 +47,6 @@ function buildColumns(): ColumnDef<Usuario>[] {
         </StatusBadge>
       ),
     },
-    {
-      accessorKey: 'tenantId',
-      header: 'Tenant',
-      cell: ({ row }) => (
-        <span className="font-numeric text-[var(--color-text-muted)]">
-          {row.original.tenantId}
-        </span>
-      ),
-    },
   ];
 }
 
@@ -181,7 +172,7 @@ export function UsuariosView() {
     <section>
       <PageHeader
         title="Usuários"
-        description="Acesso dos usuários no tenant"
+        description="Gestão de usuários"
         icon={UserGear}
         action={
           <Button onClick={openCreateModal}>

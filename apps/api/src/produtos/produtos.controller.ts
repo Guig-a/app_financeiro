@@ -7,21 +7,39 @@ import {
   Patch,
   Delete,
   UseGuards,
+  UseInterceptors,
+  UploadedFile,
+  BadRequestException,
+  ForbiddenException,
+  Res,
 } from '@nestjs/common';
 import {
   ApiTags,
   ApiOperation,
   ApiResponse,
   ApiBearerAuth,
+  ApiConsumes,
+  ApiBody,
 } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
+import { FileInterceptor } from '@nestjs/platform-express';
+import type { Response } from 'express';
 
 import { ProdutosService } from './produtos.service';
-import { ProdutosImportService } from './import/produtos-import.service';
+import {
+  ImportRowResolution,
+  ProdutosImportService,
+} from './import/produtos-import.service';
 
 import { CreateProdutoDto } from './dto/create-produto.dto';
 import { UpdateProdutoDto } from './dto/update-produto.dto';
 import { CurrentUser } from '../commom/decorators/current-user.decorator';
+import { Role } from '../common/types/role';
+import type { AuthenticatedUser } from '../common/types/authenticated-user';
+
+const CSV_IMPORT_LIMIT = 2 * 1024 * 1024;
+
+type UploadedCsvFile = { buffer: Buffer; originalname?: string };
 
 @ApiTags('produtos')
 @Controller('produtos')
@@ -30,6 +48,121 @@ export class ProdutosController {
     private service: ProdutosService,
     private importService: ProdutosImportService,
   ) {}
+
+  private ensureMasterImport(user: Pick<AuthenticatedUser, 'role'>) {
+    if (user.role !== Role.MASTER) {
+      throw new ForbiddenException(
+        'Apenas MASTER pode importar produtos via planilha.',
+      );
+    }
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Get('import/csv-template')
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({
+    summary: 'Baixar modelo CSV de produtos',
+    description: 'Apenas MASTER pode exportar o modelo e importar produtos.',
+  })
+  @ApiResponse({ status: 200, description: 'Arquivo CSV modelo' })
+  @ApiResponse({ status: 403, description: 'Usuário não é MASTER' })
+  downloadCsvTemplate(
+    @CurrentUser() user: AuthenticatedUser,
+    @Res() res: Response,
+  ) {
+    this.ensureMasterImport(user);
+    const csv = this.importService.getCsvTemplate();
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+    res.setHeader(
+      'Content-Disposition',
+      'attachment; filename="produtos-modelo.csv"',
+    );
+    res.send('\ufeff' + csv);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Post('import/preview')
+  @ApiBearerAuth('JWT-auth')
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        file: { type: 'string', format: 'binary', description: 'Arquivo .csv' },
+      },
+      required: ['file'],
+    },
+  })
+  @ApiOperation({
+    summary: 'Pré-visualizar importação CSV (validação em memória)',
+    description: 'Apenas MASTER pode importar produtos via planilha.',
+  })
+  @ApiResponse({ status: 403, description: 'Usuário não é MASTER' })
+  @UseInterceptors(
+    FileInterceptor('file', {
+      limits: { fileSize: CSV_IMPORT_LIMIT },
+    }),
+  )
+  async importPreview(
+    @CurrentUser() user: AuthenticatedUser,
+    @UploadedFile() file: UploadedCsvFile | undefined,
+  ) {
+    this.ensureMasterImport(user);
+    return this.importService.previewFromBuffer(file?.buffer, user.tenantId);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Post('import/apply')
+  @ApiBearerAuth('JWT-auth')
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        file: { type: 'string', format: 'binary' },
+        resolutions: {
+          type: 'string',
+          description:
+            'JSON: mapa rowIndex (string) -> "update" | "ignore" para linhas existentes',
+        },
+      },
+      required: ['file', 'resolutions'],
+    },
+  })
+  @ApiOperation({
+    summary: 'Confirmar importação CSV (transação all-or-nothing)',
+    description: 'Apenas MASTER pode importar produtos via planilha.',
+  })
+  @ApiResponse({ status: 403, description: 'Usuário não é MASTER' })
+  @UseInterceptors(
+    FileInterceptor('file', {
+      limits: { fileSize: CSV_IMPORT_LIMIT },
+    }),
+  )
+  async importApply(
+    @CurrentUser() user: AuthenticatedUser,
+    @UploadedFile() file: UploadedCsvFile | undefined,
+    @Body('resolutions') resolutionsRaw: string | undefined,
+  ) {
+    this.ensureMasterImport(user);
+    if (resolutionsRaw == null || resolutionsRaw === '') {
+      throw new BadRequestException('Campo "resolutions" é obrigatório (JSON).');
+    }
+    let resolutions: Record<string, ImportRowResolution>;
+    try {
+      resolutions = JSON.parse(resolutionsRaw) as Record<
+        string,
+        ImportRowResolution
+      >;
+    } catch {
+      throw new BadRequestException('Campo "resolutions" deve ser um JSON válido.');
+    }
+    return this.importService.applyFromBuffer(
+      file?.buffer,
+      user.tenantId,
+      resolutions,
+    );
+  }
 
   @UseGuards(AuthGuard('jwt'))
   @Post()
@@ -82,17 +215,5 @@ export class ProdutosController {
   @ApiResponse({ status: 200, description: 'Produto deletado' })
   remove(@CurrentUser() user: { tenantId: string }, @Param('id') id: string) {
     return this.service.remove(id, user.tenantId);
-  }
-
-  @UseGuards(AuthGuard('jwt'))
-  @Post('import/csv')
-  @ApiBearerAuth('JWT-auth')
-  @ApiOperation({ summary: 'Importar produtos via CSV' })
-  @ApiResponse({ status: 200, description: 'Produtos importados' })
-  async importCsv(@CurrentUser() user: { tenantId: string }) {
-    return this.importService.importFromCsv(
-      './uploads/produtos.csv',
-      user.tenantId,
-    );
   }
 }

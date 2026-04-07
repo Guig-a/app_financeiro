@@ -31,8 +31,17 @@ import {
   updateProduto,
 } from '../services/produto.service';
 import { useToast } from '@/shared/providers/toast-provider';
+import { useAuthSession } from '@/shared/providers/auth-session-provider';
+import { Role } from '@/shared/types/role';
 
 const ProdutosModals = dynamic(() => import('./ProdutosModals'), { ssr: false });
+const ProdutosImportPanel = dynamic(
+  () =>
+    import('./ProdutosImportPanel').then((m) => ({
+      default: m.ProdutosImportPanel,
+    })),
+  { ssr: false },
+);
 
 function buildColumns(): ColumnDef<Produto>[] {
   return [
@@ -92,6 +101,7 @@ function buildColumns(): ColumnDef<Produto>[] {
 export function ProdutosView() {
   const queryClient = useQueryClient();
   const toast = useToast();
+  const { user } = useAuthSession();
   const { data, isLoading, isError } = useProdutos();
   const {
     page,
@@ -224,7 +234,7 @@ export function ProdutosView() {
     <section>
       <PageHeader
         title="Produtos"
-        description="Cadastro de produtos por tenant"
+        description="Cadastro de produtos"
         icon={Package}
         action={
           <Button onClick={openCreateModal}>
@@ -235,6 +245,8 @@ export function ProdutosView() {
       />
 
       <div className="space-y-4">
+        {user?.role === Role.MASTER ? <ProdutosImportPanel /> : null}
+
         <FilterBar
           filters={[
             {

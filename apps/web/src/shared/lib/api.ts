@@ -14,6 +14,8 @@ type RetryableRequest = InternalAxiosRequestConfig & { _retry?: boolean };
 
 type ApiFetchInit = Omit<AxiosRequestConfig, 'url' | 'data'> & {
   json?: unknown;
+  /** Corpo bruto (ex.: FormData). Tem precedência sobre `json`. */
+  data?: AxiosRequestConfig['data'];
 };
 
 const api = axios.create({
@@ -37,7 +39,10 @@ function flushQueue(error?: unknown) {
 
 api.interceptors.request.use((config) => {
   config.headers = AxiosHeaders.from(config.headers);
-  if (!config.headers.get('Content-Type')) {
+  if (
+    !(config.data instanceof FormData) &&
+    !config.headers.get('Content-Type')
+  ) {
     config.headers.set('Content-Type', 'application/json');
   }
   return config;
@@ -98,11 +103,20 @@ export async function apiFetch<T>(
   path: string,
   init: ApiFetchInit = {},
 ): Promise<T> {
-  const { json, ...rest } = init;
+  const { json, data, ...rest } = init;
   const response = await api.request<T>({
     url: path,
-    data: json,
+    data: data ?? json,
     ...rest,
+  });
+  return response.data;
+}
+
+export async function apiFetchBlob(path: string): Promise<Blob> {
+  const response = await api.request<Blob>({
+    url: path,
+    method: 'GET',
+    responseType: 'blob',
   });
   return response.data;
 }

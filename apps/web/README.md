@@ -1,36 +1,30 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Web — Financeiro
 
-## Getting Started
+Interface em **Next.js 15** (App Router), **Tailwind** e chamadas à API com **axios** (`withCredentials`).
 
-First, run the development server:
+## O que faz
+
+Área autenticada (dashboard, lançamentos, pessoas, produtos, usuários MASTER), login e registo. A sessão fica nos **cookies do domínio da API**; em produção front e API costumam ser URLs diferentes.
+
+## Variáveis de ambiente
+
+Exemplos para `apps/web/.env.local`:
+
+- `NEXT_PUBLIC_API_URL` — URL **pública** da API (HTTPS em produção), usada no browser
+- `INTERNAL_API_URL` (opcional) — URL interna da API para pedidos no servidor Next (ex.: rede privada); se não existir, usa `NEXT_PUBLIC_API_URL`
+
+## Comandos (a partir da raiz do monorepo)
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+pnpm install
+pnpm dev:web
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Ou: `pnpm --filter @financeiro/web run dev`  
+O Next usa a porta **3000**; se a API também estiver na 3000, ajusta a porta do web (ex. `-p 3001` no script) ou a API.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Build: `pnpm turbo run build --filter=@financeiro/web`
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Mais detalhes
 
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Visão geral do monorepo, Docker e deploy: [README na raiz](../../README.md).

@@ -36,6 +36,13 @@ export class ProdutosRepository {
     return this.prisma.produto.findFirst({ where: { codigo, tenantId } });
   }
 
+  findManyByCodigos(tenantId: string, codigos: string[]) {
+    if (codigos.length === 0) return Promise.resolve([]);
+    return this.prisma.produto.findMany({
+      where: { tenantId, codigo: { in: codigos } },
+    });
+  }
+
   async update(id: string, tenantId: string, data: UpdateProdutoDto) {
     const { count } = await this.prisma.produto.updateMany({
       where: { id, tenantId },
